@@ -1,0 +1,9 @@
+Questa é una simulazione dell'operazione di analisi sintatica del compilatore GNU++, meglio conosciuto come g++, con espressioni aritmetiche elementari
+This is a simulation of the parsing function of the GNU ++ compiler, better known as g ++, with elementary arithmetic expressions
+Tämä on simulaatio GNU ++ -kääntäjän, joka tunnetaan paremmin nimellä g ++, jäsentämistoiminnosta alkeisaritmeettisilla lausekkeilla
+
+NON DOVETE usare simboli come
+You mustn't use symbols like
+EI SAA käyttää symboleja, kuten
+
+'[', ']', '{', '}', ';', ',', '.', '^'
