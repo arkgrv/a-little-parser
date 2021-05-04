@@ -18,6 +18,8 @@ namespace Parser {
 			OP_PLUS,
 			OP_MINUS,
 			OP_STAR,
+			OP_DIV,
+			OP_EXP,
 			TBD,
 			EMPTY
 		};

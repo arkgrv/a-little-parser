@@ -1,21 +1,15 @@
 #include <Parser.h>
 #include <cassert>
 #include <array>
+#include <cmath>
 
 namespace Parser {
 
 	// Operators
 	std::ostream& operator<<(std::ostream& ostr, const Token& t)
 	{
-		switch (t.type) {
-		case Token::TokenType::OP_PLUS: ostr << '+'; return ostr;
-		case Token::TokenType::OP_MINUS: ostr << '-'; return ostr;
-		case Token::TokenType::OP_STAR: ostr << '*'; return ostr;
-		case Token::TokenType::OPEN_PAREN: ostr << '('; return ostr;
-		case Token::TokenType::CLOSE_PAREN: ostr << ')'; return ostr;
-		case Token::TokenType::NUMBER: ostr << t.value; return ostr;
-		default: ostr << ' '; return ostr;
-		}
+		ostr << t.value;
+		return ostr;
 	}
 
 	std::ostream& operator<<(std::ostream& ostr, const std::vector<Token> v)
@@ -60,6 +54,8 @@ namespace Parser {
 			case '+': t.type = Token::TokenType::OP_PLUS; return t;
 			case '-': t.type = Token::TokenType::OP_MINUS; return t;
 			case '*': t.type = Token::TokenType::OP_STAR; return t;
+			case '/': t.type = Token::TokenType::OP_DIV; return t;
+			case '^': t.type = Token::TokenType::OP_EXP; return t;
 			case '(': t.type = Token::TokenType::OPEN_PAREN; return t;
 			case ')': t.type = Token::TokenType::CLOSE_PAREN; return t;
 			default: return std::nullopt;
@@ -169,7 +165,9 @@ namespace Parser {
 			if (last_five[1].type != Token::TokenType::NUMBER) break;
 			if (last_five[2].type != Token::TokenType::OP_PLUS &&
 				last_five[2].type != Token::TokenType::OP_MINUS &&
-				last_five[3].type != Token::TokenType::OP_STAR) break;
+				last_five[2].type != Token::TokenType::OP_STAR &&
+				last_five[2].type != Token::TokenType::OP_DIV &&
+				last_five[2].type != Token::TokenType::OP_EXP) break;
 			if (last_five[4].type != Token::TokenType::CLOSE_PAREN) break;
 
 			// converting value
@@ -181,6 +179,8 @@ namespace Parser {
 			case Token::TokenType::OP_PLUS: acc = a + b; break;
 			case Token::TokenType::OP_MINUS: acc = a - b; break;
 			case Token::TokenType::OP_STAR: acc = a * b; break;
+			case Token::TokenType::OP_DIV: acc = a / b; break;
+			case Token::TokenType::OP_EXP: acc = std::pow(a, b); break;
 			default: std::cerr << "Syntax error" << std::endl; exit(EXIT_FAILURE);
 			}
 
