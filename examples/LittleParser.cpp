@@ -10,8 +10,6 @@ int main()
 
 	auto tokens = read(s);
 
-	std::cout << "Parser contents: " << tokens;
-	
 	std::cout << Parser::calculate(tokens) << std::endl;
 	return 0;
 }
