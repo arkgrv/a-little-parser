@@ -19,12 +19,18 @@ namespace Parser {
 		return ostr;
 	}
 
-	int Token::to_int(const std::string& str)
+	std::ostream& operator<<(std::ostream& ostr, const Stack& s)
 	{
-		return std::stoi(str);
+		ostr << s;
+		return ostr;
 	}
 
-	std::string Token::to_string(int val)
+	double Token::to_value(const std::string& str)
+	{
+		return std::stod(str);
+	}
+
+	std::string Token::to_string(double val)
 	{
 		return std::to_string(val);
 	}
@@ -33,41 +39,51 @@ namespace Parser {
 	{
 		if (str.empty()) return std::nullopt;
 
-		auto it = str.begin();
-		for (; it != str.end(); ++it)
-			if (!isspace(*it)) break;
-		str.erase(str.begin(), it);
+		Token t;
 
-		size_t ns = str.find(' ');
-		if (ns == std::string::npos) ns = str.size();
+		switch (str.front()) {
+			case '+':
+				str.erase(str.begin(), str.begin() + 1);
+				return Token(TokenType::OP_PLUS, "+");
+			case '-':
+				str.erase(str.begin(), str.begin() + 1);
+				return Token(TokenType::OP_MINUS, "-");
+			case '*':
+				str.erase(str.begin(), str.begin() + 1);
+				return Token(TokenType::OP_STAR, "*");
+			case '/':
+				str.erase(str.begin(), str.begin() + 1);
+				return Token(TokenType::OP_DIV, "/");
+			case '^':
+				str.erase(str.begin(), str.begin() + 1);
+				return Token(TokenType::OP_EXP, "^");
+			case '(':
+				str.erase(str.begin(), str.begin() + 1);
+				return Token(TokenType::OPEN_PAREN, "(");
+			case ')':
+				str.erase(str.begin(), str.begin() + 1);
+				return Token(TokenType::CLOSE_PAREN, ")");
+			default: {
+				if (isspace(str.front())) {
+					str.erase(str.begin(), str.begin() + 1);
+					return Token(TokenType::IGN_SPACE);
+				}
 
-		Token t(str.substr(0, ns));
-		str.erase(str.begin(), str.begin() + ns);
-
-		if (t.value.length() == 1) {
-			if (isdigit(t.value.front())) {
-				t.type = Token::TokenType::NUMBER;
-				return t;
-			}
-
-			switch (t.value.front()) {
-			case '+': t.type = Token::TokenType::OP_PLUS; return t;
-			case '-': t.type = Token::TokenType::OP_MINUS; return t;
-			case '*': t.type = Token::TokenType::OP_STAR; return t;
-			case '/': t.type = Token::TokenType::OP_DIV; return t;
-			case '^': t.type = Token::TokenType::OP_EXP; return t;
-			case '(': t.type = Token::TokenType::OPEN_PAREN; return t;
-			case ')': t.type = Token::TokenType::CLOSE_PAREN; return t;
-			default: return std::nullopt;
+				// number case
+				if (isdigit(str.front())) {
+					std::string val;
+					bool dec = false;
+					while ((isdigit(str.front()) || str.front() == '.')
+							&& str.begin() != str.end()) {
+						if (str.front() == '.' && dec) continue;
+						val.push_back(str.front());
+						str.erase(str.begin(), str.begin() + 1);
+					}
+					return Token(TokenType::NUMBER, val);
+				}
+				else return std::nullopt;
 			}
 		}
-
-		// multi digit number
-		for (const auto& x : t.value) {
-			if (!isdigit(x)) return std::nullopt;
-		}
-		t.type = Token::TokenType::NUMBER;
-		return t;
 	}
 
 	struct StackNode {
@@ -119,13 +135,15 @@ namespace Parser {
 		return (nullptr == start);
 	}
 
-	void Stack::print() const
+	std::ostream& Stack::operator<<(std::ostream& ostr)
 	{
-		auto ptr = start;
-		while (nullptr != start) {
-			std::cout << ptr->data << " ";
+		auto tmp = start;
+		while (nullptr != tmp) {
+			ostr << tmp->data << " ";
+			tmp = tmp->next;
 		}
-		std::cout << std::endl;
+		ostr << std::endl;
+		return ostr;
 	}
 
 	std::vector<Token> read(const std::string& text)
@@ -138,17 +156,18 @@ namespace Parser {
 				std::cerr << "Unknown token in " << str << std::endl;
 				exit(EXIT_FAILURE);
 			}
-			res.push_back(*tok);
+			if (tok->type != Token::TokenType::IGN_SPACE)
+				res.push_back(*tok);
 		}
 		return res;
 	}
 
-	int calculate(std::vector<Token> tokens)
+	double calculate(std::vector<Token> tokens)
 	{
 		std::array<Token, 5> last_five;
 		Stack s;
 
-		int acc;
+		double acc;
 
 		while (!tokens.empty()) {
 			auto tok = tokens.front();
@@ -171,8 +190,8 @@ namespace Parser {
 			if (last_five[4].type != Token::TokenType::CLOSE_PAREN) break;
 
 			// converting value
-			auto a = Token::to_int(last_five[1].value);
-			auto b = Token::to_int(last_five[3].value);
+			auto a = Token::to_value(last_five[1].value);
+			auto b = Token::to_value(last_five[3].value);
 
 			// operators check
 			switch (last_five[2].type) {
@@ -199,7 +218,7 @@ namespace Parser {
 			std::cerr << "Unknown runtime error" << std::endl;
 			exit(EXIT_FAILURE);
 		}
-		return Token::to_int(tok.value);
+		return Token::to_value(tok.value);
 	}
 }
 
