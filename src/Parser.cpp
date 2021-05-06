@@ -64,6 +64,7 @@ namespace Parser {
 				str.erase(str.begin(), str.begin() + 1);
 				return Token(TokenType::CLOSE_PAREN, ")");
 			default: {
+				// ignorning space
 				if (isspace(str.front())) {
 					str.erase(str.begin(), str.begin() + 1);
 					return Token(TokenType::IGN_SPACE);
@@ -72,11 +73,19 @@ namespace Parser {
 				// number case
 				if (isdigit(str.front())) {
 					std::string val;
-					bool dec = false;
+					bool seen = false;
 					while ((isdigit(str.front()) || str.front() == '.')
 							&& str.begin() != str.end()) {
-						if (str.front() == '.' && dec) continue;
-						val.push_back(str.front());
+						auto c = str.front();
+
+						if (c == '.' && seen) {
+							str.erase(str.begin(), str.begin() + 1);
+							continue;
+						}
+
+						if (c == '.') seen = true;
+
+						val.push_back(c);
 						str.erase(str.begin(), str.begin() + 1);
 					}
 					return Token(TokenType::NUMBER, val);
