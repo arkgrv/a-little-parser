@@ -129,14 +129,16 @@ namespace Parser {
 
 	Token Stack::pop()
 	{
-		assert(!empty());
-		auto ret = start->data;
-		auto del = start;
+		if (!empty()) {
+			auto ret = start->data;
+			auto del = start;
 
-		start = start->next;
-		delete del;
+			start = start->next;
+			delete del;
 
-		return ret;
+			return ret;
+		}
+		return Token(Token::TokenType::EMPTY);
 	}
 
 	bool Stack::empty() const
@@ -218,13 +220,13 @@ namespace Parser {
 		}
 
 		if (!tokens.empty()) {
-			std::cerr << "Unknown runtime error" << std::endl;
+			std::cerr << "Syntax error" << std::endl;
 			exit(EXIT_FAILURE);
 		}
 
 		auto tok = s.pop();
 		if (!s.empty() || tok.type != Token::TokenType::NUMBER) {
-			std::cerr << "Unknown runtime error" << std::endl;
+			std::cerr << "Syntax error" << std::endl;
 			exit(EXIT_FAILURE);
 		}
 		return Token::to_value(tok.value);
